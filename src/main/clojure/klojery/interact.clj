@@ -1,68 +1,149 @@
 (ns klojery.interact
   (:use (clojure.core))
-  (:import (de.uka.ilkd.key.script ScriptAPI)
-           (de.uka.ilkd.key.util KeYConstants)
-           (de.uka.ilkd.key.proof.io ProofSaver)
-           (de.uka.ilkd.key.settings ProofIndependentSettings)
+  (:import (de.uka.ilkd.key.clojure ProofScript)
+           (de.uka.ilkd.key.logic Term)
            (java.io File))
   (:gen-class))
 
 (def ^:dynamic *current-proof* nil)
+(def ^:dynamic *current-goal* nil)
+(def ^:dynamic *default-auto-steps* 1000)
+
+;;; utillities 
+(defmacro with-proof [proofexpr & forms] 
+  "Execute the given forms with activate 'proofexpr`"
+  `(with-redefs [*current-proof* ~proofexpr]
+     (with-goal (get-first-open-goal)
+     ~@forms)))
+
+(defmacro with-goal [goalexpr & forms] 
+  "Execute the given forms with activate 'proofexpr`"
+  `(with-redefs [*current-goal* ~goalexpr]
+     ~@forms))
+
+(defn get-first-open-goal
+  ([proof]
+    (first (.openGoals proof)))
+  ([]
+    (get-first-open-goal *current-proof*)))
+  
+(defn open-goals
+  ([proof]
+    (.openGoals proof))
+  ([]
+    (.openGoals *current-proof*)))
+
+
+(defn with-all-open-goals 
+  ""
+  ([proof]
+    `(doseq [*current-goal* (get-open-goals ~proof)]
+       &forms))
+  ([]
+    (with-all-open-goals *current-proof*)))
 ;;;
 
+(defn str->term [^String string & {:keys [proof] :or {:proof *current-proof*}}]  
+  (ProofScript/toTerm proof string de.uka.ilkd.key.logic.sort.Sort/FORMULA))
+
+(defn term [obj & {:keys [proof] :or {:proof *current-proof*}}]
+  (if (instance? Term obj)
+    obj
+    (str->term (str obj) :proof proof)))
+
 ;;; -------------------------------------
-(defmacro macro [name]
+(defmacro -ensure-proof
+  ([proof & forms]
+  `(let [~proof (if ~proof ~proof *current-proof*)]
+     ~@forms)))
+
+(defmacro -ensure-goal 
+  [goal & forms]
+  `(let [~goal  (if ~goal  ~goal  *current-goal*)]
+     ~@forms))
+
+
+(defmacro -ensure-proof-and-goal
+  [proof goal & forms]
+  `(-ensure-proof ~proof (-ensure-goal ~goal ~@forms)))
+
+(defn macro 
+  [name & {:keys [proof goal]}]
   "Applies a macro to the current proof.
 Available macros are:
 
 * autopilot
 * ..."
-
-  `(.macro *api* '~name))
+  (-ensure-proof-and-goal
+    proof goal
+    (ProofScript/macro proof goal (str name))))
 
 ;;; -------------------------------------
-(defmacro rule
+(defn rule
   ""
-  [name & {:keys [on occ formula]}]
-  `(.rule *api* '~name ~on ~occ ~formula))
+  [name & {:keys [proof goal formula on occ ] 
+           :or {:occ -1}}]
+  (-ensure-proof-and-goal 
+    proof goal
+    (ProofScript/rule proof goal (str name) formula on occ)))
 
 ;;; -------------------------------------
-(defmacro instantiate [ & {:keys [var formula occ  with hide]} ]
-  `(.instantiate *api* var formula occ with hide))
+(defn instantiate 
+  [{:keys [proof goal with var formula occ hide] :or {:occ -1 :hide false}}]
+  (-ensure-proof-and-goal 
+    proof goal
+    (ProofScript/instantiate proof goal with var formula occ hide)))
+
+;;; --------------------------------------
+(defn tryclose [ & {:keys [steps proof goal]}]
+  (-ensure-proof-and-goal 
+    proof goal 
+    (ProofScript/tryclose  proof goal steps)))
+
+;;; --------------------------------------
+(defn smt [name & {:keys [steps proof goal]}]
+  (-ensure-proof-and-goal 
+    proof goal
+    (ProofScript/smt  proof goal (str name))))
+
+;;; -------------------------------------
+(defn set!
+  ""
+  ([options & {:keys [proof]}]
+    (-ensure-proof proof    
+                   (ProofScript/set proof options)))
+  
+  ;;([key value & {:keys [proof]}]    
+  ;;  (ProofScript/set proof (str key) (str value))))
+)
+;;; --------------------------------------
+(defn tryclose [ & {:keys [proof goal steps] 
+                    :or {:proof *current-proof* :goal *current-goal* :steps *default-auto-steps*}}]
+  (-ensure-proof-and-goal 
+    proof goal
+    (ProofScript/tryclose proof goal steps)))
+   
+;;; --------------------------------------
+(defn script [filename & {:keys [proof]}]
+  (-ensure-proof 
+    proof
+    (ProofScript/script proof filename)))
 
 
 ;;; --------------------------------------
-(defmacro tryclose [ & {:keys [steps] :or {:steps nil}}]
-  `(.tryclose *api* steps))
+(defn leave
+  ""
+  [& {:keys [proof goal ] :or {:proof *current-proof* :goal *current-goal*}}]
+  (-ensure-proof-and-goal 
+    proof goal
+    (ProofScript/leave proof goal)))
 
 ;;; --------------------------------------
-(defn smt
-  [solver]
-  (.smt *api* solver)
-    []
-  (.smt *api* nil))
-
-;;; --------------------------------------
-(defmacro set! [name value]
-  `(.set *api* (symbol-name '~name) ~value))
-
-;;; --------------------------------------
-(defmacro select [formula]
-  (.select *api* formula))
-
-;;; --------------------------------------
-(defmacro script [file]
-  (.script *api* file))
-
-;;; --------------------------------------
-(defn leave [] (.leave *api*))
-
-;;; --------------------------------------
-(defn exit [] (.exit *api*))
-
-;;; --------------------------------------
-(defmacro auto [&{:keys [steps all] :or {:steps nil :all false}}]
-  (.auto *api* steps all))
+(defn auto
+  [& {:keys [proof goal steps] :or {:steps 1000}}]
+  (-ensure-proof-and-goal 
+    proof goal
+    (ProofScript/auto proof goal) proof)) ;; TODO STEPS
 
 ;;; start nrepl
 ;(use '[clojure.tools.nrepl.server :only (start-server stop-server)])

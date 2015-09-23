@@ -1,12 +1,13 @@
 (ns klojery.core
   (:use (clojure.core))
-  (:import (de.uka.ilkd.key.script ScriptAPI)
+  (:import (de.uka.ilkd.key.clojure Core)
            (de.uka.ilkd.key.proof Proof)
            (de.uka.ilkd.key.proof.init AbstractProfile)
            (de.uka.ilkd.key.util KeYConstants)
            (de.uka.ilkd.key.proof.io ProofSaver ProblemLoader)
            (de.uka.ilkd.key.settings ProofIndependentSettings)
            (java.io File))
+  (:use klojery.interact)
   (:gen-class))
 
 (defn get-key-version []
@@ -19,11 +20,7 @@
 
 (defn load-problem [^String filename]
   ""
-  (doto
-      (ProblemLoader. filename nil nil nil
-                   (AbstractProfile/getDefaultProfile)
-                   false nil true nil nil)
-   .load))
+  (Core/loadProblem filename))
 
 
 (defn save-proof [^Proof proof ^String filename]
@@ -35,6 +32,7 @@
 
 (def testfile
   "/home/weigl/work/key/key/key.ui/examples/standard_key/prop_log/contraposition.key")
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
@@ -42,6 +40,6 @@
            (get-key-copyright) "\n")
 
 
-  (clojure.main/repl :init (fn [] (in-ns 'klojery.core)))
+  ;(clojure.main/repl :init (fn [] (in-ns 'klojery.core)))
   ;(reply.main/launch args)
-  )
+  (load-file "usecase.clj"))
