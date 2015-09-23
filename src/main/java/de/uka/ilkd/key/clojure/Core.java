@@ -15,7 +15,7 @@ public class Core {
 		ClojureControl control = new ClojureControl();
 		control.loadProblem(new File(file));
 		// return control.getMediator().getSelectedProof();
-		System.out.println(control.proofList.getProof(0).getStatistics());
+		//System.out.println(control.proofList.getProof(0).getStatistics());
 		return control.proofList;
 	}
 
