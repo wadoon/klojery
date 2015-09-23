@@ -10,9 +10,9 @@ function install ()
     name=$(basename ${1%%.jar})
     #lein localrepo install -r lib $1 $GRP/$name $KEY_VERSION &
 
-    mvn install:install-file -DgroupId=$GRP -DartifactId=$name \
-       -Dversion=$KEY_VERSION -Dpackaging=jar -Dfile=$1 \
-       -DlocalRepositoryPath=repo
+	mvn deploy:deploy-file -DgroupId=$GRP -DartifactId=$name \
+		  -Dversion=$KEY_VERSION -Dpackaging=jar -Dfile=$1 \
+		    -Durl=file:repo
 
     echo "[$GRP/$name $KEY_VERSION]"
 }
