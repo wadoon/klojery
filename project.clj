@@ -7,6 +7,9 @@
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]
 
+  :local-repo "lib"
+  ;:repositories [["local" "file:///home/weigl/Documents/klojery/lib"]]
+
   ;; does not work, weigl
   :plugin [[lein-localrepo "0.5.3"]]
 

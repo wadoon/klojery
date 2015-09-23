@@ -3,10 +3,17 @@
 KEY_VERSION=2.5
 GRP=org.key-project
 
+mkdir -p repo
+
 function install ()
 {
     name=$(basename ${1%%.jar})
-    lein localrepo install -r lib $1 $GRP/$name $KEY_VERSION &
+    #lein localrepo install -r lib $1 $GRP/$name $KEY_VERSION &
+
+    mvn install:install-file -DgroupId=$GRP -DartifactId=$name \
+       -Dversion=$KEY_VERSION -Dpackaging=jar -Dfile=$1 \
+       -DlocalRepositoryPath=repo
+
     echo "[$GRP/$name $KEY_VERSION]"
 }
 
