@@ -18,7 +18,6 @@
                  ;; Key Stuff
                  [org.key-project/key.core 2.5]
                  [org.key-project/key.core.proof_references 2.5]
-                 [org.key-project/key.core 2.5]
                  [org.key-project/key.core.symbolic_execution 2.5]
                  [org.key-project/key.removegenerics 2.5]
                  [org.key-project/key.ui 2.5]
