@@ -6,7 +6,7 @@ GRP=org.key-project
 function install ()
 {
     name=$(basename ${1%%.jar})
-    lein localrepo install $1 $GRP/$name $KEY_VERSION
+    lein localrepo install -r lib $1 $GRP/$name $KEY_VERSION &
     echo "[$GRP/$name $KEY_VERSION]"
 }
 

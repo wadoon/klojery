@@ -8,7 +8,7 @@
   :java-source-paths ["src/main/java"]
 
   ;; does not work, weigl
-  ;;:plugin [[lein-localrepo "0.5.3"]]
+  :plugin [[lein-localrepo "0.5.3"]]
 
   :dependencies [[org.clojure/clojure "1.7.0"]
 
