@@ -14,7 +14,8 @@
   "Execute the given forms with activate 'proofexpr`"
   `(with-redefs [*current-proof* ~proofexpr]
      (with-goal (get-first-open-goal)
-     ~@forms)))
+     ~@forms
+     *current-proof*)))
 
 (defmacro with-goal [goalexpr & forms] 
   "Execute the given forms with activate 'proofexpr`"
@@ -34,13 +35,12 @@
     (.openGoals *current-proof*)))
 
 
-(defn with-all-open-goals 
+(defmacro with-all-open-goals 
   ""
-  ([proof]
-    `(doseq [*current-goal* (get-open-goals ~proof)]
-       &forms))
-  ([]
-    (with-all-open-goals *current-proof*)))
+  ([proof & forms]
+    `(doseq [goal# (open-goals ~proof)]
+       (with-goal goal#
+         ~@forms))))
 ;;;
 
 (defn str->term [^String string & {:keys [proof] :or {:proof *current-proof*}}]  
@@ -54,13 +54,17 @@
 ;;; -------------------------------------
 (defmacro -ensure-proof
   ([proof & forms]
-  `(let [~proof (if ~proof ~proof *current-proof*)]
-     ~@forms)))
+  `(let [~proof (or ~proof *current-proof*)]
+     (if (nil? ~proof)
+       (throw (IllegalStateException. "*current-proof* is nil"))
+       (do ~@forms)))))
 
 (defmacro -ensure-goal 
   [goal & forms]
-  `(let [~goal  (if ~goal  ~goal  *current-goal*)]
-     ~@forms))
+  `(let [~goal  (or ~goal  *current-goal*)]
+     (if (nil? ~goal)
+       (throw (IllegalStateException. "*current-goal* is nil"))
+       (do ~@forms))))
 
 
 (defmacro -ensure-proof-and-goal
@@ -80,12 +84,13 @@ Available macros are:
 
 ;;; -------------------------------------
 (defn rule
-  ""
-  [name & {:keys [proof goal formula on occ ] 
-           :or {:occ -1}}]
-  (-ensure-proof-and-goal 
-    proof goal
-    (ProofScript/rule proof goal (str name) formula on occ)))
+  ""  
+  ([name & {:keys [proof goal formula on occ ]}]
+    (let [occ (or occ 0)]
+      (println "Occ: " occ)
+      (-ensure-proof-and-goal 
+        proof goal
+        (ProofScript/rule proof goal (str name) formula on occ)))))
 
 ;;; -------------------------------------
 (defn instantiate 

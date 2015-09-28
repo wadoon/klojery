@@ -14,8 +14,6 @@ public class Core {
 	public static ProofAggregate loadProblem(String file) {
 		ClojureControl control = new ClojureControl();
 		control.loadProblem(new File(file));
-		// return control.getMediator().getSelectedProof();
-		System.out.println(control.proofList.getProof(0).getStatistics());
 		return control.proofList;
 	}
 
@@ -41,7 +39,6 @@ class ClojureControl extends ConsoleUserInterfaceControl {
 	@Override
 	public void loadingFinished(AbstractProblemLoader loader, LoadedPOContainer poContainer, ProofAggregate proofList,
 			ReplayResult result) throws ProblemLoaderException {
-		System.out.println(proofList.getProof(0).getStatistics());
 		this.proofList = proofList;
 	}
 

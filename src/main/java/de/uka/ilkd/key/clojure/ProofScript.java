@@ -64,7 +64,7 @@ public class ProofScript {
 	private static DefaultTermParser PARSER = new DefaultTermParser();
 	private static AbbrevMap EMPTY_MAP = new AbbrevMap();
 
-	public final Goal getFirstOpenGoal(Proof proof, Map<String, Object> state) throws ScriptException {
+	/*public final Goal getFirstOpenGoal(Proof proof, Map<String, Object> state) throws ScriptException {
 		Object fixedGoal = state.get(GOAL_KEY);
 		if (fixedGoal instanceof Node) {
 			Goal g = getGoal(proof.openGoals(), (Node) fixedGoal);
@@ -119,7 +119,8 @@ public class ProofScript {
 		assert false : "There must be an open goal at this point";
 		return null;
 	}
-
+	*/
+	
 	public final static Term toTerm(Proof proof, String string, Sort sort) throws ParserException {
 		StringReader reader = new StringReader(string);
 		Services services = proof.getServices();
@@ -353,7 +354,16 @@ public class ProofScript {
 		}
 	}
 
-	private static ImmutableList<TacletApp> findAllTacletApps(Proof proof, Goal g, String rulename, Term formula)
+	/**
+	 * 
+	 * @param proof
+	 * @param g
+	 * @param rulename
+	 * @param formula
+	 * @return
+	 * @throws ScriptException
+	 */
+	public static ImmutableList<TacletApp> findAllTacletApps(Proof proof, Goal g, String rulename, Term formula)
 			throws ScriptException {
 		Services services = proof.getServices();
 		TacletFilter filter = new TacletNameFilter(rulename);
