@@ -14,6 +14,7 @@ public class Core {
 	public static ProofAggregate loadProblem(String file) {
 		ClojureControl control = new ClojureControl();
 		control.loadProblem(new File(file));
+
 		return control.proofList;
 	}
 

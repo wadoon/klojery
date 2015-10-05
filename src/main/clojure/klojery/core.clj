@@ -36,10 +36,27 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
+  (def beatiful-key
+(str 
+"__________________________ 
+    _    _         _     _
+    /  ,'          |    /   %0
+---/_.'------__----|---/--  %1 
+  /  \\     /___)   |  /     %2
+_/____\\___(___ ____|_/____
+                    /     
+                (_ /      "))
+
+(let [lines (clojure.string/split (get-key-copyright) #", " 3)]
+  (println (clojure.string/replace beatiful-key #"%(\d)" 
+	#(nth lines (read-string (second %)) ""))))
+
+ 
   (println (get-key-version) "\n"
            (get-key-copyright) "\n")
 
 
   ;(clojure.main/repl :init (fn [] (in-ns 'klojery.core)))
   ;(reply.main/launch args)
-  (load-file "usecase.clj"))
+  ;(load-file "usecase.clj"))
+  )
